@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.uxDEM = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.uxResolution = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
             this.uxCreate = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.uxResolution = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.uxDEM = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -57,30 +57,15 @@
             this.splitContainer1.SplitterDistance = 56;
             this.splitContainer1.TabIndex = 0;
             // 
-            // uxDEM
+            // uxCreate
             // 
-            this.uxDEM.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.uxDEM.FormattingEnabled = true;
-            this.uxDEM.Location = new System.Drawing.Point(61, 23);
-            this.uxDEM.Name = "uxDEM";
-            this.uxDEM.Size = new System.Drawing.Size(203, 21);
-            this.uxDEM.TabIndex = 0;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(24, 26);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(31, 13);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "DEM";
-            // 
-            // uxResolution
-            // 
-            this.uxResolution.Location = new System.Drawing.Point(364, 24);
-            this.uxResolution.Name = "uxResolution";
-            this.uxResolution.Size = new System.Drawing.Size(48, 20);
-            this.uxResolution.TabIndex = 2;
+            this.uxCreate.Location = new System.Drawing.Point(432, 22);
+            this.uxCreate.Name = "uxCreate";
+            this.uxCreate.Size = new System.Drawing.Size(75, 23);
+            this.uxCreate.TabIndex = 4;
+            this.uxCreate.Text = "Create Grid";
+            this.uxCreate.UseVisualStyleBackColor = true;
+            this.uxCreate.Click += new System.EventHandler(this.uxCreate_Click);
             // 
             // label2
             // 
@@ -92,22 +77,38 @@
             this.label2.TabIndex = 3;
             this.label2.Text = "New resolution";
             // 
-            // uxCreate
+            // uxResolution
             // 
-            this.uxCreate.Location = new System.Drawing.Point(432, 22);
-            this.uxCreate.Name = "uxCreate";
-            this.uxCreate.Size = new System.Drawing.Size(75, 23);
-            this.uxCreate.TabIndex = 4;
-            this.uxCreate.Text = "Create Grid";
-            this.uxCreate.UseVisualStyleBackColor = true;
+            this.uxResolution.Location = new System.Drawing.Point(364, 24);
+            this.uxResolution.Name = "uxResolution";
+            this.uxResolution.Size = new System.Drawing.Size(48, 20);
+            this.uxResolution.TabIndex = 2;
             // 
-            // Form1
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(24, 26);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(31, 13);
+            this.label1.TabIndex = 1;
+            this.label1.Text = "DEM";
+            // 
+            // uxDEM
+            // 
+            this.uxDEM.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.uxDEM.FormattingEnabled = true;
+            this.uxDEM.Location = new System.Drawing.Point(61, 23);
+            this.uxDEM.Name = "uxDEM";
+            this.uxDEM.Size = new System.Drawing.Size(203, 21);
+            this.uxDEM.TabIndex = 0;
+            // 
+            // GridGSSHA
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(536, 272);
             this.Controls.Add(this.splitContainer1);
-            this.Name = "Form1";
+            this.Name = "GridGSSHA";
             this.Text = "Configure GSSHA";
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();

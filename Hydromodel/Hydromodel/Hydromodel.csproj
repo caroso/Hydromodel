@@ -118,11 +118,11 @@
       <DependentUpon>Configure.cs</DependentUpon>
     </Compile>
     <Compile Include="GSSHA\Domain.cs" />
-    <Compile Include="GSSHA\Form1.cs">
+    <Compile Include="GSSHA\GridGSSHA.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GSSHA\Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="GSSHA\GridGSSHA.Designer.cs">
+      <DependentUpon>GridGSSHA.cs</DependentUpon>
     </Compile>
     <Compile Include="GSSHA\Utils.cs" />
     <Compile Include="Hydromodel.cs" />
@@ -143,8 +143,8 @@
     <EmbeddedResource Include="Configure.resx">
       <DependentUpon>Configure.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GSSHA\Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="GSSHA\GridGSSHA.resx">
+      <DependentUpon>GridGSSHA.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DotSpatial.Topology;
-namespace Hydromodel.GSSHA
+using DotSpatial.Controls;
+namespace Hydromodel
 {
+
+
+
 
     public struct Stat
     {
@@ -163,6 +167,17 @@ namespace Hydromodel.GSSHA
 
     public class Utils
     {
+        public  static Dictionary<string, string> GetList(IMap map)
+        {
+            Dictionary<string, string> n = new Dictionary<string, string>();
+            foreach (IMapRasterLayer item in map.GetRasterLayers())
+            {
+                string name = item.DataSet.Filename;
+                n.Add(item.LegendText, name);
+            }
+            return n;
+        }
+
 
         public static string GetFolderFile(string path)
         {
