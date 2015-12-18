@@ -43,7 +43,7 @@ namespace Hydromodel
             {
                 uxList.Items.Add(item);
             }
-            Dictionary<string, string> rasters = GetList(map);
+            Dictionary<string, string> rasters = Utils.GetList(map);
             foreach (string item in rasters.Keys)
             {
                 uxListRasters.Items.Add(item);
@@ -88,7 +88,7 @@ namespace Hydromodel
         ConfigurationParameter[] ValuesParameters;
         private string Parm(string command, string dems, List<string> input, List<string> output, Dictionary<string, string> inputT, Dictionary<string, string> outputT)
         {
-            Dictionary<string, string> rasters = GetList(map);
+            Dictionary<string, string> rasters = Utils.GetList(map);
             string raster = GetList(rasters.Keys.ToArray());
             string folder = "";
             try
@@ -276,16 +276,6 @@ namespace Hydromodel
             }
         }
 
-        private Dictionary<string, string> GetList(IMap map)
-        {
-            Dictionary<string, string> n = new Dictionary<string, string>();
-            foreach (IMapRasterLayer item in map.GetRasterLayers())
-            {
-                string name = item.DataSet.Filename;
-                n.Add(item.LegendText, name);
-            }
-            return n;
-        }
 
          private string GetList(string[] p)
          {
