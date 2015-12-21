@@ -118,6 +118,12 @@
       <DependentUpon>Configure.cs</DependentUpon>
     </Compile>
     <Compile Include="GSSHA\Domain.cs" />
+    <Compile Include="GSSHA\ExportValue.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GSSHA\ExportValue.Designer.cs">
+      <DependentUpon>ExportValue.cs</DependentUpon>
+    </Compile>
     <Compile Include="GSSHA\GridGSSHA.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -142,6 +148,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Configure.resx">
       <DependentUpon>Configure.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GSSHA\ExportValue.resx">
+      <DependentUpon>ExportValue.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GSSHA\GridGSSHA.resx">
       <DependentUpon>GridGSSHA.cs</DependentUpon>

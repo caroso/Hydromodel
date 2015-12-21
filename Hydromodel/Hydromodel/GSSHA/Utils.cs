@@ -178,6 +178,29 @@ namespace Hydromodel
             return n;
         }
 
+        public static Dictionary<string, IMapRasterLayer> GetListRaster(IMap map)
+        {
+            Dictionary<string, IMapRasterLayer> n = new Dictionary<string, IMapRasterLayer>();
+            foreach (IMapRasterLayer item in map.GetRasterLayers())
+            {
+                string name = item.DataSet.Filename;
+                n.Add(item.LegendText, item);
+            }
+            return n;
+        }
+
+        public static Dictionary<string, IMapPolygonLayer> GetListPoly(IMap map)
+        {
+            Dictionary<string, IMapPolygonLayer> n = new Dictionary<string, IMapPolygonLayer>();
+            foreach (IMapPolygonLayer item in map.GetRasterLayers())
+            {
+                string name = item.DataSet.Filename;
+                n.Add(item.LegendText, item);
+            }
+            return n;
+        }
+
+
 
         public static string GetFolderFile(string path)
         {

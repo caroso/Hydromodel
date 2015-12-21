@@ -9,7 +9,7 @@ using DotSpatial.Controls.Header;
 using System.Windows.Forms;
 using DotSpatial.Data;
 using DotSpatial.Topology;
-
+using Hydromodel.GSSHA;
 namespace Hydromodel
 {
     public class Hydromodel:Extension
@@ -41,7 +41,11 @@ namespace Hydromodel
             head.Add(rbBlockIBox);
             head.Add(rbBlockIBox1);
             App.HeaderControl.Add(new SimpleActionItem(HeaderControl.HomeRootItemKey, "Add Point", AddPoint_Click) { GroupCaption = "Add point Tool" });
-            App.HeaderControl.Add(new SimpleActionItem(HeaderControl.HomeRootItemKey, "Cancel add Point", CancelPoint_Click) { GroupCaption = "Add point Tool" });            
+            App.HeaderControl.Add(new SimpleActionItem(HeaderControl.HomeRootItemKey, "Cancel add Point", CancelPoint_Click) { GroupCaption = "Add point Tool" });
+
+            SimpleActionItem rbBlockIBoxG = new SimpleActionItem(kMad3, "GSSHA", G_Click);
+            rbBlockIBox.GroupCaption = group;
+            head.Add(rbBlockIBoxG);
            // App.HeaderControl.Add(cr);
 
         }
@@ -91,6 +95,12 @@ namespace Hydromodel
             t.Show();
         }
 
+        private void G_Click(object sender, EventArgs e)
+        {
+            GridGSSHA g = new GridGSSHA(App.Map);
+            g.Show();
+
+        }
         private void configure_Click(object sender, EventArgs e)
         {
             Configure cfg = new Configure();

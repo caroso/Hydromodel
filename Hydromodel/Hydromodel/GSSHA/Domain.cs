@@ -1114,6 +1114,19 @@ namespace Hydromodel.GSSHA
             }
         }
 
+        public static Polygon createExtend(this VectorGrid field)
+        {
+            Coordinate[] array = new Coordinate[5];
+            array[0] = new Coordinate(field.MinX, field.MinY);
+            array[1] = new Coordinate(field.MaxX, field.MinY);
+            array[2] = new Coordinate(field.MaxX, field.MaxY);
+            array[3] = new Coordinate(field.MinX, field.MaxY);
+            array[4] = new Coordinate(field.MinX, field.MinY);
+            LinearRing shell = new LinearRing(array);
+            Polygon poly = new Polygon(shell);
+            return poly;
+        }
+
         public static Polygon CreatePolygonPixel(this VectorGrid field, int i, int j, int k, DrawPlane plane)
         {
             double minx;
@@ -1126,7 +1139,7 @@ namespace Hydromodel.GSSHA
             minx = field.MinX + sumx;
 
             double sumy = 0;
-            miny = field.MaxY - (field.CellSizeY*j);
+            miny = field.MaxY - (field.CellSizeY * j) - field.CellSizeY;
 
 
             Coordinate[] array = new Coordinate[5];
@@ -1560,13 +1573,14 @@ namespace Hydromodel.GSSHA
 
 
 
-        private void AddFeaturesData(int id, int i, int j, int k, IFeature newF)
+        private void AddFeaturesData(int id, int i, int j, int k, IFeature newF, int index=-9999, double field=-9999)
         {
             newF.DataRow["ID"] = id;
             newF.DataRow["row"] = j + 1;
             newF.DataRow["col"] = i + 1;
             newF.DataRow["Layer"] = k + 1;
-            newF.DataRow["Field"] = this.Data[i, j, k];
+            newF.DataRow["Index"]  = index;
+            newF.DataRow["Field"] = field;
         }
 
         private void AddFeaturesData(MADBound id, IFeature newF)
@@ -1686,16 +1700,31 @@ namespace Hydromodel.GSSHA
             }
 
         }
-
-        public void AddGridLayer(Map mainMap, string name)
+        public void DrawExtent(Map mainMap,string name="Extent")
         {
+            Validator.RemoveLayer(mainMap, name);
+            AddGridLayer(mainMap,name);
+            IFeature newF = GridLayer.DataSet.AddFeature(this.createExtend());
+            newF.DataRow["ID"] = -1;
+            newF.DataRow["row"] = -1;
+            newF.DataRow["col"] = -1;
+            newF.DataRow["Layer"] =-1;
+            mainMap.ResetBuffer();
+        }
 
+        public void AddGridLayer(Map mainMap, string name, string color="Transparent")
+        {
+            Color col = Color.Transparent;
+            if (color!="Transparent")
+                col= Color.Beige;
+            
             RectangleFs = new FeatureSet(FeatureType.Polygon);
             RectangleFs.DataTable.Columns.Add("ID");
             RectangleFs.DataTable.Columns.Add("row");
             RectangleFs.DataTable.Columns.Add("col");
             RectangleFs.DataTable.Columns.Add("Layer");
             RectangleFs.DataTable.Columns.Add(new System.Data.DataColumn("Field", typeof(double)));
+            RectangleFs.DataTable.Columns.Add(new System.Data.DataColumn("Index", typeof(int)));
             RectangleFs.Projection = mainMap.Projection;
 
             GridLayer = new MapPolygonLayer(RectangleFs);
@@ -1706,7 +1735,7 @@ namespace Hydromodel.GSSHA
             GridLayer.Symbolizer = new PolygonSymbolizer();
             // 
             GridLayer.Symbolizer.SetOutline(Color.Red, 1.0);
-            GridLayer.Symbolizer.SetFillColor(Color.Transparent);
+            GridLayer.Symbolizer.SetFillColor(col);
             GridLayer.SelectionSymbolizer = GridLayer.Symbolizer;
             GridLayer.Symbolizer.SetOutline(Color.Red, 1.0);
             // Extent ext = this.GetExtent(0.15);
@@ -1718,7 +1747,8 @@ namespace Hydromodel.GSSHA
 
         public void AddGridLayer(Map mainMap)
         {
-            if (GridLayerIsInMap(mainMap))
+            string name = "Grid";
+            if (GridLayerIsInMap(mainMap,name))
             {
                 GridLayer.DataSet.Features.Clear();
             }
@@ -1730,6 +1760,7 @@ namespace Hydromodel.GSSHA
                 RectangleFs.DataTable.Columns.Add("col");
                 RectangleFs.DataTable.Columns.Add("Layer");
                 RectangleFs.DataTable.Columns.Add(new System.Data.DataColumn("Field", typeof(double)));
+                RectangleFs.DataTable.Columns.Add(new System.Data.DataColumn("Index", typeof(int)));
                 RectangleFs.Projection = mainMap.Projection;
 
                 GridLayer = new MapPolygonLayer(RectangleFs);
@@ -1749,7 +1780,7 @@ namespace Hydromodel.GSSHA
 
             }
 
-            if (!GridLayerIsInMap(mainMap))
+            if (!GridLayerIsInMap(mainMap,name))
             {
                 //    Extent ext = this.GetExtent(0.15);
                 mainMap.Layers.Add(GridLayer);
@@ -1811,7 +1842,7 @@ namespace Hydromodel.GSSHA
         public void CreateThematicMap(Map mainMap, DrawPlane plane, int layer, bool viewGrid)
         {
             Validator.RemoveLayer(mainMap, Properties.Resources.VerctorGrid);
-            AddGridLayer(mainMap);
+            AddGridLayer(mainMap,"Grid");
             GenerateFeatureSetGrid(plane, 1, viewGrid);
             // mainMap.Layers.Add(GridLayer);
             CreateSymbology(layer);
@@ -1832,7 +1863,7 @@ namespace Hydromodel.GSSHA
         public void CreateThematicMap(Map mainMap, DrawPlane plane, bool viewGrid)
         {
             Validator.RemoveLayer(mainMap, Properties.Resources.VerctorGrid);
-            AddGridLayer(mainMap);
+            AddGridLayer(mainMap,"Grid");
             GenerateFeatureSetGrid(plane, 1, viewGrid);
             // mainMap.Layers.Add(GridLayer);
             CreateSymbology(1);
@@ -1879,15 +1910,44 @@ namespace Hydromodel.GSSHA
         public void CreateEmptyMap(Map mainMap, DrawPlane plane, bool viewGrid)
         {
             Validator.RemoveLayer(mainMap, Properties.Resources.VerctorGrid);
-            AddGridLayer(mainMap);
+            AddGridLayer(mainMap,"Grid");
             GenerateFeatureSetGrid(plane, 1, viewGrid);
+            // mainMap.Layers.Add(GridLayer);
+            // CreateSymbology();
+            mainMap.ResetBuffer();
+        }
+        public void CreateMap(Map mainMap,string name)
+        {
+            Validator.RemoveLayer(mainMap, name);
+            AddGridLayer(mainMap,name);
+            GenerateFeatureSetGrid(DrawPlane.xy, 1, true);
             // mainMap.Layers.Add(GridLayer);
             // CreateSymbology();
             mainMap.ResetBuffer();
 
         }
 
+        public void CreateMap(Map mainMap, string name, FeatureSet Fea)
+        {
+            Validator.RemoveLayer(mainMap, name);
+            AddGridLayer(mainMap, name);
+            GenerateFeatureIntersect(DrawPlane.xy, 1, true,Fea);
+            // mainMap.Layers.Add(GridLayer);
+            // CreateSymbology();
+            mainMap.ResetBuffer();
 
+        }
+
+        public void CreateMap(Map mainMap, string name, IRaster Ras)
+        {
+            Validator.RemoveLayer(mainMap, name);
+            AddGridLayer(mainMap, name);
+            GenerateFeatureIntersect(DrawPlane.xy, 1, true,Ras);
+            // mainMap.Layers.Add(GridLayer);
+            // CreateSymbology();
+            mainMap.ResetBuffer();
+
+        }
 
         private void CreateSymbology(int layer)
         {
@@ -1955,11 +2015,11 @@ namespace Hydromodel.GSSHA
             }
             return stat;
         }
-        public bool GridLayerIsInMap(Map mainMap)
+        public bool GridLayerIsInMap(Map mainMap,string name)
         {
             foreach (IMapLayer lay in mainMap.GetAllLayers())
             {
-                if (lay.LegendText == Properties.Resources.VerctorGrid)
+                if (lay.LegendText == name)
                 {
                     GridLayer = (MapPolygonLayer)lay;
                     return true;
@@ -1968,9 +2028,9 @@ namespace Hydromodel.GSSHA
             return false;
         }
 
-        public void AddLayer(Map mainMap)
+        public void AddLayer(Map mainMap,string name)
         {
-            if (GridLayerIsInMap(mainMap))
+            if (GridLayerIsInMap(mainMap,name))
             {
                 GridLayer.DataSet.Features.Clear();
             }
@@ -1982,6 +2042,7 @@ namespace Hydromodel.GSSHA
                 RectangleFs.DataTable.Columns.Add("col");
                 RectangleFs.DataTable.Columns.Add("Layer");
                 RectangleFs.DataTable.Columns.Add(new System.Data.DataColumn("Field", typeof(double)));
+                RectangleFs.DataTable.Columns.Add(new System.Data.DataColumn("Index", typeof(int)));
                 RectangleFs.Projection = area.GetProjection();
 
                 GridLayer = new MapPolygonLayer(RectangleFs);
@@ -1992,7 +2053,7 @@ namespace Hydromodel.GSSHA
                 GridLayer.Symbolizer = new PolygonSymbolizer();
                 // 
                 GridLayer.Symbolizer.SetOutline(Color.Red, 1.0);
-                GridLayer.Symbolizer.SetFillColor(Color.Transparent);
+                GridLayer.Symbolizer.SetFillColor(Color.Beige);
                 GridLayer.SelectionSymbolizer = GridLayer.Symbolizer;
                 GridLayer.Symbolizer.SetOutline(Color.Red, 1.0);
                 // Extent ext = this.GetExtent(0.15);
@@ -2001,7 +2062,7 @@ namespace Hydromodel.GSSHA
 
             }
 
-            if (!GridLayerIsInMap(mainMap))
+            if (!GridLayerIsInMap(mainMap,name))
             {
                 //    Extent ext = this.GetExtent(0.15);
                 mainMap.Layers.Add(GridLayer);
@@ -2140,6 +2201,343 @@ namespace Hydromodel.GSSHA
             }
 
         }
+
+        public void GenerateFeatureIntersect(DrawPlane plane, int layer, bool viewGrid, FeatureSet fea)
+        {
+            if (Nodes != null && Nodes.Count > 0 && !viewGrid)
+            {
+                LoadTypes();
+
+                foreach (ElementMAD item in Elements.Values)
+                {
+                    List<NodeMAD> nod = new List<NodeMAD>();
+                    foreach (int item1 in item.IdNodes)
+                    {
+                        nod.Add(Nodes[item1]);
+                    }
+
+
+                    Polygon pol = this.CreateElement(nod, GetSeq(item.type, 2), plane);
+                    IFeature newF = GridLayer.DataSet.AddFeature(pol);
+                    AddFeaturesData(item, newF);
+
+                }
+
+                RectangleFs = (FeatureSet)GridLayer.DataSet;
+                RectangleFs.InitializeVertices();
+                RectangleFs.UpdateExtent();
+                return;
+
+            }
+
+
+
+
+
+            if (this.NumLayers == 0) this.NumLayers = 1;
+            if (plane == DrawPlane.xy)
+            {
+                PCRL[] lisp = new PCRL[this.NumColumns * this.NumRows * 1];
+                Dictionary<int,int> ids= new Dictionary<int,int>();
+
+                Parallel.For(1, this.NumColumns * this.NumRows * 1 + 1, idv =>
+                {
+                    int l = Convert.ToInt32(Math.Ceiling((double)idv / (this.NumColumns * this.NumRows)));
+                    int r = Convert.ToInt32(Math.Ceiling((double)(idv - (l - 1) * (this.NumColumns * this.NumRows)) / this.NumColumns));
+                    int c = idv - (l - 1) * (this.NumColumns * this.NumRows) - (r - 1) * this.NumColumns;
+                    Polygon poly = this.CreatePolygonPixel(c - 1, r - 1, l - 1, plane);
+                    CRL idc = new CRL();
+                    idc.c = c;
+                    idc.r = r;
+                    idc.l = l;
+                    idc.id = idv;
+                    PCRL p = new PCRL();
+                    p.pol = poly;
+                    p.id = idc;
+                    lisp[idv - 1] = p;
+                    ids.Add(idv,GetValueFea(fea,poly));
+                });
+
+
+                cells = new List<ICell>();
+                foreach (PCRL item in lisp)
+                {
+                    IFeature newF = GridLayer.DataSet.AddFeature(item.pol);
+                    
+                    AddFeaturesData(item.id.id, item.id.c - 1, item.id.r - 1, layer - 1, newF,ids[item.id.id]);
+                    cells.Add(this.CreateCell(item.id.c - 1, item.id.r - 1, layer - 1));
+                    //   newF.DataRow["Field"] = this.data[item.id.c, item.id.r, item.id.l];
+                }
+
+
+
+                RectangleFs = (FeatureSet)GridLayer.DataSet;
+                RectangleFs.InitializeVertices();
+                RectangleFs.UpdateExtent();
+            }
+            if (plane == DrawPlane.xz)
+            {
+                PCRL[] lisp = new PCRL[this.NumColumns * this.NumRows * this.NumLayers];
+
+
+                Parallel.For(1, this.NumColumns * this.NumRows * this.NumLayers + 1, idv =>
+                {
+                    int l = Convert.ToInt32(Math.Ceiling((double)idv / (this.NumColumns * this.NumRows)));
+                    int r = Convert.ToInt32(Math.Ceiling((double)(idv - (l - 1) * (this.NumColumns * this.NumRows)) / this.NumColumns));
+                    int c = idv - (l - 1) * (this.NumColumns * this.NumRows) - (r - 1) * this.NumColumns;
+                    Polygon poly = this.CreatePolygonPixel(c - 1, r - 1, l - 1, plane);
+                    CRL idc = new CRL();
+                    idc.c = c;
+                    idc.r = r;
+                    idc.l = l;
+                    idc.id = idv;
+                    PCRL p = new PCRL();
+                    p.pol = poly;
+                    p.id = idc;
+                    lisp[idv - 1] = p;
+                });
+
+
+                cells = new List<ICell>();
+                foreach (PCRL item in lisp)
+                {
+                    IFeature newF = GridLayer.DataSet.AddFeature(item.pol);
+                    AddFeaturesData(item.id.id, item.id.c - 1, item.id.r - 1, item.id.l - 1, newF);
+                    cells.Add(this.CreateCell(item.id.c - 1, item.id.r - 1, item.id.l - 1));
+                    //   newF.DataRow["Field"] = this.data[item.id.c, item.id.r, item.id.l];
+                }
+
+
+
+                RectangleFs = (FeatureSet)GridLayer.DataSet;
+                RectangleFs.InitializeVertices();
+                RectangleFs.UpdateExtent();
+            }
+
+        }
+
+        struct RasterCount
+        {
+            public int count;
+            public int nulls;
+            public double values;
+
+            public double GetValue()
+            {
+                if (count>=nulls)
+                {
+                    return values / count;
+                }else
+                {
+                    return -9999;
+                }
+
+            }
+
+        }
+
+        public void GenerateFeatureIntersect(DrawPlane plane, int layer, bool viewGrid, IRaster raster)
+        {
+            if (Nodes != null && Nodes.Count > 0 && !viewGrid)
+            {
+                LoadTypes();
+
+                foreach (ElementMAD item in Elements.Values)
+                {
+                    List<NodeMAD> nod = new List<NodeMAD>();
+                    foreach (int item1 in item.IdNodes)
+                    {
+                        nod.Add(Nodes[item1]);
+                    }
+
+
+                    Polygon pol = this.CreateElement(nod, GetSeq(item.type, 2), plane);
+                    IFeature newF = GridLayer.DataSet.AddFeature(pol);
+                    AddFeaturesData(item, newF);
+
+                }
+
+                RectangleFs = (FeatureSet)GridLayer.DataSet;
+                RectangleFs.InitializeVertices();
+                RectangleFs.UpdateExtent();
+                return;
+
+            }
+
+
+
+
+
+            if (this.NumLayers == 0) this.NumLayers = 1;
+            if (plane == DrawPlane.xy)
+            {
+                PCRL[] lisp = new PCRL[this.NumColumns * this.NumRows * 1];
+               
+                Dictionary<int, int> RCol = new Dictionary<int, int>();
+                Dictionary<int, int> RRow = new Dictionary<int, int>();
+                CompleteRasterIndex(plane, raster, RCol, RRow);
+                RasterCount[,] values = new RasterCount[this.NumColumns, this.NumRows];
+                //for (int i = 0; i < this.NumColumns; i++)
+                //{
+                //    for (int j = 0; j < this.NumRows; j++)
+                //    {
+                //        values[i,j] = new RasterCount();
+                //        }
+                //}
+
+                LoadValuesFromRaster(raster, RCol, RRow, values);
+
+                
+                
+                Parallel.For(1, this.NumColumns * this.NumRows * 1 + 1, idv =>
+                {
+                    int l = Convert.ToInt32(Math.Ceiling((double)idv / (this.NumColumns * this.NumRows)));
+                    int r = Convert.ToInt32(Math.Ceiling((double)(idv - (l - 1) * (this.NumColumns * this.NumRows)) / this.NumColumns));
+                    int c = idv - (l - 1) * (this.NumColumns * this.NumRows) - (r - 1) * this.NumColumns;
+                    Polygon poly = this.CreatePolygonPixel(c - 1, r - 1, l - 1, plane);
+                    CRL idc = new CRL();
+                    idc.c = c;
+                    idc.r = r;
+                    idc.l = l;
+                    idc.id = idv;
+                    PCRL p = new PCRL();
+                    p.pol = poly;
+                    p.id = idc;
+                    lisp[idv - 1] = p;
+                   // ids.Add(idv,);
+                });
+
+
+                cells = new List<ICell>();
+                foreach (PCRL item in lisp)
+                {
+                    IFeature newF = GridLayer.DataSet.AddFeature(item.pol);
+
+                    AddFeaturesData(item.id.id, item.id.c - 1, item.id.r - 1, layer - 1, newF, -9999, values[item.id.c - 1, item.id.r - 1].GetValue());
+                    cells.Add(this.CreateCell(item.id.c - 1, item.id.r - 1, layer - 1));
+                    //   newF.DataRow["Field"] = this.data[item.id.c, item.id.r, item.id.l];
+                }
+
+
+
+                RectangleFs = (FeatureSet)GridLayer.DataSet;
+                RectangleFs.InitializeVertices();
+                RectangleFs.UpdateExtent();
+            }
+            if (plane == DrawPlane.xz)
+            {
+                PCRL[] lisp = new PCRL[this.NumColumns * this.NumRows * this.NumLayers];
+
+
+                Parallel.For(1, this.NumColumns * this.NumRows * this.NumLayers + 1, idv =>
+                {
+                    int l = Convert.ToInt32(Math.Ceiling((double)idv / (this.NumColumns * this.NumRows)));
+                    int r = Convert.ToInt32(Math.Ceiling((double)(idv - (l - 1) * (this.NumColumns * this.NumRows)) / this.NumColumns));
+                    int c = idv - (l - 1) * (this.NumColumns * this.NumRows) - (r - 1) * this.NumColumns;
+                    Polygon poly = this.CreatePolygonPixel(c - 1, r - 1, l - 1, plane);
+                    CRL idc = new CRL();
+                    idc.c = c;
+                    idc.r = r;
+                    idc.l = l;
+                    idc.id = idv;
+                    PCRL p = new PCRL();
+                    p.pol = poly;
+                    p.id = idc;
+                    lisp[idv - 1] = p;
+                });
+
+
+                cells = new List<ICell>();
+                foreach (PCRL item in lisp)
+                {
+                    IFeature newF = GridLayer.DataSet.AddFeature(item.pol);
+                    AddFeaturesData(item.id.id, item.id.c - 1, item.id.r - 1, item.id.l - 1, newF);
+                    cells.Add(this.CreateCell(item.id.c - 1, item.id.r - 1, item.id.l - 1));
+                    //   newF.DataRow["Field"] = this.data[item.id.c, item.id.r, item.id.l];
+                }
+
+
+
+                RectangleFs = (FeatureSet)GridLayer.DataSet;
+                RectangleFs.InitializeVertices();
+                RectangleFs.UpdateExtent();
+            }
+
+        }
+
+        private static void LoadValuesFromRaster(IRaster raster, Dictionary<int, int> RCol, Dictionary<int, int> RRow, RasterCount[,] values)
+        {
+            for (int i = 0; i < raster.NumColumns; i++)
+            {
+                for (int j = 0; j < raster.NumRows; j++)
+                {
+                    double value = raster.Value[j, i];
+                    int Gc = RCol[i];
+                    int Gr = RRow[j];
+
+                    if (value == raster.NoDataValue)
+                    {
+                        values[Gc, Gr].nulls++;
+
+                    }
+                    else
+                    {
+                        values[Gc, Gr].count++;
+                        values[Gc, Gr].values += value;
+                    }
+
+                }
+            }
+        }
+
+        private void CompleteRasterIndex(DrawPlane plane, IRaster raster, Dictionary<int, int> RCol, Dictionary<int, int> RRow)
+        {
+            for (int i = 0; i < this.NumColumns; i++)
+            {
+                Polygon poly = this.CreatePolygonPixel(i, 0, 0, plane);
+                for (int ri = 0; ri < raster.NumColumns; ri++)
+                {
+                    Coordinate c = raster.CellToProj(0, ri);
+                    IGeometry f = Geometry.FromBasicGeometry(new Feature(c));
+                    if (poly.Contains(f))
+                    {
+                        RCol.Add(ri, i);
+                    }
+
+                }
+            }
+
+            for (int i = 0; i < this.NumRows; i++)
+            {
+                Polygon poly = this.CreatePolygonPixel(0, i, 0, plane);
+                for (int ri = 0; ri < raster.NumRows; ri++)
+                {
+                    Coordinate c = raster.CellToProj(ri, 0);
+                    IGeometry f = Geometry.FromBasicGeometry(new Feature(c));
+                    if (poly.Contains(f))
+                    {
+                        RRow.Add(ri, i);
+                    }
+
+                }
+            }
+        }
+
+
+
+        private int GetValueFea(FeatureSet fea, Polygon poly)
+        {
+            foreach (IFeature item in fea.Features)
+            {
+                if(item.Contains(poly.Centroid.Centroid))
+                {
+                    return Convert.ToInt32(item.DataRow["Index"]);
+                }
+            }
+            return -9999;
+        }
+
+
 
 
         #endregion
@@ -2422,6 +2820,262 @@ namespace Hydromodel.GSSHA
         #endregion
 
 
+
+
+
+
+        internal void Export(string file, string field)
+        {
+            
+        }
+    }
+    public class Grid : VectorGrid
+    {
+        private IGridConfiguration g;
+
+
+        public Grid(IAreaInterest area, double[, ,] data, string namefield, int idsample,
+             int realization, string reference, int originType)
+            : base()
+        {
+            this.area = (AreaInterest)area;
+            this.Data = data;
+            this.NameField = namefield;
+            this.IdSample = idsample;
+            this.Realization = realization;
+            this.Reference = reference;
+            this.OriginType = originType;
+            this.TypeDomain = area.TypeDomain;
+
+        }
+
+        public Grid(IAreaInterest area, double[, ,] data, IMap map)
+            : this(area, data, "", 0, 0, "", 0)
+        {
+            this.area = (AreaInterest)area;
+            this.Data = data;
+            this.TypeDomain = area.TypeDomain;
+        }
+
+        public Grid(AreaInterest area) :
+            this(area, null, "", 0, 0, "", 0)
+        {
+            this.area = area;
+            if (area.TypeDomain == Type_Domain.Grid)
+            {
+                FillData();
+                this.TypeDomain = area.TypeDomain;
+                this.UpdateAreaInterest(area);
+            }
+            else
+            {
+
+                this.Nodes = area.Nodes;
+                this.Elements = area.Elements;
+                this.TypeDomain = area.TypeDomain;
+
+            }
+
+        }
+
+
+        public Grid(AreaInterest area, DimensionFM proj) :
+            this(area, null, "", 0, 0, "", 0)
+        {
+            this.area = area;
+            FillData();
+            this.TypeDomain = area.TypeDomain;
+            this.UpdateAreaInterest(area);
+
+        }
+
+        public Grid() :
+            this(null, null, "", 0, 0, "", 0)
+        {
+
+        }
+
+        public Grid(AreaInterest area, IGridConfiguration g)
+        {
+            // TODO: Complete member initialization
+            this.area = area;
+            this.g = g;
+            this.Nodes = g.Nodes;
+            this.Elements = g.Elements;
+        }
+
+        #region Grid_methods
+
+        public void SetGrid(IField field)
+        {
+            this.area = new AreaInterest();
+
+            this.area.Azimut = field.Azimut;
+            this.area.CellSizeX = field.CellSizeX;
+            this.area.CellSizeY = field.CellSizeY;
+            this.area.CellSizeY = field.CellSizeZ;
+            this.area.ColumnsSize = field.ColumnsSize;
+            this.area.LayerSize = field.LayerSize;
+            this.area.Date = field.Date;
+            this.area.Description = field.Description;
+            this.area.LastChange = field.LastChange;
+            this.area.MaxX = field.MaxX;
+            this.area.MaxY = field.MaxY;
+            this.area.MinX = field.MinX;
+            this.area.MinY = field.MinY;
+            this.area.Name = field.Name;
+            this.area.NumColumns = field.NumColumns;
+            this.area.NumRows = field.NumRows;
+            this.area.Projection = field.Projection;
+            this.area.RowsSize = field.RowsSize;
+            this.area.TypeCoor = field.TypeCoor;
+            this.Nodes = field.Nodes;
+            this.Elements = field.Elements;
+
+
+            this.Data = field.Data;
+            this.NameField = field.NameField;
+            this.IdSample = field.IdSample;
+            this.Realization = field.Realization;
+            this.Reference = field.Reference;
+            this.OriginType = field.OriginType;
+            this.Period = field.Period;
+            this.Step = field.Step;
+        }
+
+        public Grid CloneInfoNotData(IField field)
+        {
+            Grid g = new Grid();
+
+            g.area = new AreaInterest();
+
+            g.area.Azimut = field.Azimut;
+            g.area.CellSizeX = field.CellSizeX;
+            g.area.CellSizeY = field.CellSizeY;
+            g.area.CellSizeY = field.CellSizeZ;
+            g.area.ColumnsSize = field.ColumnsSize;
+            g.area.LayerSize = field.LayerSize;
+            g.area.Date = field.Date;
+            g.area.Description = field.Description;
+            g.area.LastChange = field.LastChange;
+            g.area.MaxX = field.MaxX;
+            g.area.MaxY = field.MaxY;
+            g.area.MinX = field.MinX;
+            g.area.MinY = field.MinY;
+            g.area.Name = field.Name;
+            g.area.NumColumns = field.NumColumns;
+            g.area.NumRows = field.NumRows;
+            g.area.Projection = field.Projection;
+            g.area.RowsSize = field.RowsSize;
+            g.area.TypeCoor = field.TypeCoor;
+            g.area.TypeDomain = field.TypeDomain;
+
+
+            if (field.TypeDomain == Type_Domain.Unstructured)
+            {
+                g.Nodes = field.Nodes;
+
+                Dictionary<int, ElementMAD> el = new Dictionary<int, ElementMAD>();
+                foreach (var item in this.Elements.Values)
+                {
+                    ElementMAD e = new ElementMAD();
+                    e.id = item.id;
+                    e.IdNodes = item.IdNodes;
+                    e.numberElemenst = item.numberElemenst;
+                    e.type = item.type;
+                    e.value = item.value;
+                    e.centroid = item.centroid;
+                    e.group = item.group;
+
+
+                    el.Add(item.id, e);
+
+                }
+
+
+                g.Elements = el;
+            }
+
+            if (field.TypeDomain == Type_Domain.Grid)
+            {
+                double[, ,] d = new double[field.Data.GetLength(0), field.Data.GetLength(1), field.Data.GetLength(2)];
+                for (int i = 0; i < field.Data.GetLength(0); i++)
+                {
+                    for (int j = 0; j < field.Data.GetLength(1); j++)
+                    {
+                        for (int k = 0; k < field.Data.GetLength(2); k++)
+                        {
+                            d[i, j, k] = 0;
+                        }
+
+                    }
+                }
+                g.data = d;
+
+            }
+
+
+
+            g.NameField = field.NameField;
+            g.IdSample = field.IdSample;
+            g.Realization = field.Realization;
+            g.Reference = field.Reference;
+            g.OriginType = field.OriginType;
+            g.Period = field.Period;
+            g.Step = field.Step;
+            return g;
+        }
+
+        public override string PopulateFromReferenceFile(string file)
+        {
+            RectangleFs = (FeatureSet)FeatureSet.Open(@file);
+
+            if (!RectangleFs.FeatureType.Equals(FeatureType.Polygon))
+            {
+                System.Windows.Forms.MessageBox.Show("This is not a polygon shapefile.");
+                return "";
+            }
+
+
+
+            foreach (Feature fea in RectangleFs.Features)
+            {
+                int i = Convert.ToInt32(fea.DataRow["col"]);
+                int j = Convert.ToInt32(fea.DataRow["row"]);
+                double d = Convert.ToDouble(fea.DataRow["Field"]);
+                this.data[i - 1, j - 1, 0] = d;
+
+            }
+
+
+            return file;
+        }
+
+        public override void Open(Map mainMap, string file)
+        {
+            PopulateFromReferenceFile(@file);
+            GridLayer = new MapPolygonLayer(RectangleFs);
+            GridLayer.LegendText = Properties.Resources.VerctorGrid;
+
+            //_rectangleLayer.LegendItemVisible = false;
+            Color redColor = Color.Red.ToTransparent(0.8f);
+            GridLayer.Symbolizer = new PolygonSymbolizer();
+            // 
+            GridLayer.Symbolizer.SetOutline(Color.Red, 1.0);
+            GridLayer.Symbolizer.SetFillColor(Color.Transparent);
+            GridLayer.SelectionSymbolizer = GridLayer.Symbolizer;
+            GridLayer.Symbolizer.SetOutline(Color.Red, 1.0);
+            // Extent ext = this.GetExtent(0.15);
+            mainMap.Layers.Add(GridLayer);
+        }
+
+        public override void Save(string file)
+        {
+            RectangleFs.SaveAs(file, true);
+        }
+
+
+        #endregion
 
 
 
