@@ -40,8 +40,8 @@ namespace Hydromodel.GSSHA
                 uxDEM.Items.Add(item);
 
             }
-
-            foreach (var item in Utils.GetListPoly(map))
+            polygon = Utils.GetListPoly(map);
+            foreach (var item in  polygon.Keys)
             {
                 uxPolygon.Items.Add(item);
             }
@@ -93,7 +93,10 @@ namespace Hydromodel.GSSHA
 
             }
             VectorGrid v = new Grid(area);
-            v.CreateMap(map as Map, "L"+uxDEM.Text ,ras);
+            _vector = v;
+            
+            if (uxUpElev.CheckState== CheckState.Checked)
+              v.CreateMap(map as Map, "E"+uxDEM.Text ,ras);
             
             if (uxExport1.uxExport.CheckState== CheckState.Checked)
                 if(uxExport1.uxNameFile.Text!="")
@@ -101,12 +104,14 @@ namespace Hydromodel.GSSHA
                     v.Export(uxExport1.uxNameFile.Text, "Field");
                 }
 
-
+            uxTable.Enabled = true;
 
             //v.DrawExtent(map as Map,"New Extent");
         
  
         }
+
+        VectorGrid _vector;
 
         private static void configArea(double c, DotSpatial.Data.IRaster ras, int nc, int nr, AreaInterest area)
         {
@@ -126,6 +131,31 @@ namespace Hydromodel.GSSHA
 
         private void uxDEM_SelectedIndexChanged(object sender, EventArgs e)
         {
+            Type p = typeof(int);
+            IFeatureSet fea = polygon[uxPolygon.Text].DataSet;
+            _vector.FieldDataset = uxFields.Text;
+            _vector.FieldType = GetTypeField(fea, uxFields.Text);
+           _vector.CreateMap(map as Map,uxName.Text, fea);
+        }
+
+        private Type GetTypeField(IFeatureSet fea, string field)
+        {
+            return fea.DataTable.Columns[field].DataType;
+        }
+
+        private void uxPolygon_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ComboBox c = sender as ComboBox;
+            IMapPolygonLayer pol = polygon[c.Text];
+            var columns = pol.DataSet.GetColumns();
+            uxFields.Items.Clear();
+            foreach (var item in columns)
+            {
+                uxFields.Items.Add(item.Caption);
+            }
+
+            if (uxFields.Items.Count > 0)
+                uxFields.SelectedIndex = 0;
 
         }
     }

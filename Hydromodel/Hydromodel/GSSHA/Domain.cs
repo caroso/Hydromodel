@@ -1573,14 +1573,22 @@ namespace Hydromodel.GSSHA
 
 
 
-        private void AddFeaturesData(int id, int i, int j, int k, IFeature newF, int index=-9999, double field=-9999)
+        private void AddFeaturesData(int id, int i, int j, int k, IFeature newF, int index=-9999, object field=null)
         {
             newF.DataRow["ID"] = id;
             newF.DataRow["row"] = j + 1;
             newF.DataRow["col"] = i + 1;
             newF.DataRow["Layer"] = k + 1;
-            newF.DataRow["Index"]  = index;
-            newF.DataRow["Field"] = field;
+          
+            if (FieldType== typeof(int))
+            newF.DataRow["Field"] = Convert.ToInt32(field);
+            if (FieldType == typeof(string))
+                newF.DataRow["Field"] = Convert.ToString(field);
+            if (FieldType == typeof(double))
+                newF.DataRow["Field"] = Convert.ToDouble(field);
+
+            newF.DataRow["Index"] = index;
+
         }
 
         private void AddFeaturesData(MADBound id, IFeature newF)
@@ -1717,14 +1725,16 @@ namespace Hydromodel.GSSHA
             Color col = Color.Transparent;
             if (color!="Transparent")
                 col= Color.Beige;
-            
+            if (FieldType == null)
+                FieldType = typeof(int);
+
             RectangleFs = new FeatureSet(FeatureType.Polygon);
             RectangleFs.DataTable.Columns.Add("ID");
             RectangleFs.DataTable.Columns.Add("row");
             RectangleFs.DataTable.Columns.Add("col");
             RectangleFs.DataTable.Columns.Add("Layer");
-            RectangleFs.DataTable.Columns.Add(new System.Data.DataColumn("Field", typeof(double)));
-            RectangleFs.DataTable.Columns.Add(new System.Data.DataColumn("Index", typeof(int)));
+            RectangleFs.DataTable.Columns.Add(new System.Data.DataColumn("Field", FieldType));
+            RectangleFs.DataTable.Columns.Add(new System.Data.DataColumn("Index", typeof(double)));
             RectangleFs.Projection = mainMap.Projection;
 
             GridLayer = new MapPolygonLayer(RectangleFs);
@@ -1927,7 +1937,7 @@ namespace Hydromodel.GSSHA
 
         }
 
-        public void CreateMap(Map mainMap, string name, FeatureSet Fea)
+        public void CreateMap(Map mainMap, string name, IFeatureSet Fea)
         {
             Validator.RemoveLayer(mainMap, name);
             AddGridLayer(mainMap, name);
@@ -2202,7 +2212,7 @@ namespace Hydromodel.GSSHA
 
         }
 
-        public void GenerateFeatureIntersect(DrawPlane plane, int layer, bool viewGrid, FeatureSet fea)
+        public void GenerateFeatureIntersect(DrawPlane plane, int layer, bool viewGrid, IFeatureSet fea)
         {
             if (Nodes != null && Nodes.Count > 0 && !viewGrid)
             {
@@ -2238,7 +2248,12 @@ namespace Hydromodel.GSSHA
             if (plane == DrawPlane.xy)
             {
                 PCRL[] lisp = new PCRL[this.NumColumns * this.NumRows * 1];
-                Dictionary<int,int> ids= new Dictionary<int,int>();
+                Type type = typeof(int);
+
+                if(FieldType== null)
+                    type=FieldType;
+
+                Dictionary<int,object> ids= new Dictionary<int,object>();
 
                 Parallel.For(1, this.NumColumns * this.NumRows * 1 + 1, idv =>
                 {
@@ -2264,7 +2279,7 @@ namespace Hydromodel.GSSHA
                 {
                     IFeature newF = GridLayer.DataSet.AddFeature(item.pol);
                     
-                    AddFeaturesData(item.id.id, item.id.c - 1, item.id.r - 1, layer - 1, newF,ids[item.id.id]);
+                    AddFeaturesData(item.id.id, item.id.c - 1, item.id.r - 1, layer - 1, newF,-9999,ids[item.id.id]);
                     cells.Add(this.CreateCell(item.id.c - 1, item.id.r - 1, layer - 1));
                     //   newF.DataRow["Field"] = this.data[item.id.c, item.id.r, item.id.l];
                 }
@@ -2525,15 +2540,21 @@ namespace Hydromodel.GSSHA
 
 
 
-        private int GetValueFea(FeatureSet fea, Polygon poly)
+        private object GetValueFea(IFeatureSet fea, Polygon poly)
         {
+            if (FieldDataset == null)
+                FieldDataset = "Index";
+
             foreach (IFeature item in fea.Features)
             {
                 if(item.Contains(poly.Centroid.Centroid))
                 {
-                    return Convert.ToInt32(item.DataRow["Index"]);
+                    return item.DataRow[FieldDataset];
                 }
             }
+            if (FieldType == typeof(string))
+                return "N/A";
+            else
             return -9999;
         }
 
@@ -2828,6 +2849,10 @@ namespace Hydromodel.GSSHA
         {
             
         }
+
+        public string FieldDataset { get; set; }
+
+        public Type FieldType { get; set; }
     }
     public class Grid : VectorGrid
     {

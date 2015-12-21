@@ -36,18 +36,20 @@
             this.uxResolution = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.uxDEM = new System.Windows.Forms.ComboBox();
+            this.uxExport2 = new ExportValue();
             this.uxName = new System.Windows.Forms.TextBox();
             this.uxField = new System.Windows.Forms.Label();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.uxFields = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.uxPolygon = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.uxExport2 = new ExportValue();
+            this.uxTable = new System.Windows.Forms.GroupBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.uxTable.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -69,21 +71,14 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.uxExport2);
-            this.splitContainer1.Panel2.Controls.Add(this.uxName);
-            this.splitContainer1.Panel2.Controls.Add(this.uxField);
-            this.splitContainer1.Panel2.Controls.Add(this.comboBox2);
-            this.splitContainer1.Panel2.Controls.Add(this.label5);
-            this.splitContainer1.Panel2.Controls.Add(this.button1);
-            this.splitContainer1.Panel2.Controls.Add(this.uxPolygon);
-            this.splitContainer1.Panel2.Controls.Add(this.label4);
-            this.splitContainer1.Size = new System.Drawing.Size(761, 262);
-            this.splitContainer1.SplitterDistance = 117;
+            this.splitContainer1.Panel2.Controls.Add(this.uxTable);
+            this.splitContainer1.Size = new System.Drawing.Size(715, 245);
+            this.splitContainer1.SplitterDistance = 123;
             this.splitContainer1.TabIndex = 0;
             // 
             // uxExport1
             // 
-            this.uxExport1.Location = new System.Drawing.Point(12, 69);
+            this.uxExport1.Location = new System.Drawing.Point(14, 69);
             this.uxExport1.Name = "uxExport1";
             this.uxExport1.Size = new System.Drawing.Size(537, 45);
             this.uxExport1.TabIndex = 6;
@@ -144,9 +139,16 @@
             this.uxDEM.TabIndex = 0;
             this.uxDEM.SelectedIndexChanged += new System.EventHandler(this.uxDEM_SelectedIndexChanged);
             // 
+            // uxExport2
+            // 
+            this.uxExport2.Location = new System.Drawing.Point(13, 69);
+            this.uxExport2.Name = "uxExport2";
+            this.uxExport2.Size = new System.Drawing.Size(537, 45);
+            this.uxExport2.TabIndex = 7;
+            // 
             // uxName
             // 
-            this.uxName.Location = new System.Drawing.Point(386, 43);
+            this.uxName.Location = new System.Drawing.Point(386, 48);
             this.uxName.Name = "uxName";
             this.uxName.Size = new System.Drawing.Size(145, 20);
             this.uxName.TabIndex = 5;
@@ -154,30 +156,30 @@
             // uxField
             // 
             this.uxField.AutoSize = true;
-            this.uxField.Location = new System.Drawing.Point(24, 47);
+            this.uxField.Location = new System.Drawing.Point(24, 52);
             this.uxField.Name = "uxField";
             this.uxField.Size = new System.Drawing.Size(29, 13);
             this.uxField.TabIndex = 13;
             this.uxField.Text = "Field";
             // 
-            // comboBox2
+            // uxFields
             // 
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Items.AddRange(new object[] {
+            this.uxFields.FormattingEnabled = true;
+            this.uxFields.Items.AddRange(new object[] {
             "Mask",
             "Soil",
             "Land-Soil",
             "Infiltration"});
-            this.comboBox2.Location = new System.Drawing.Point(138, 43);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(148, 21);
-            this.comboBox2.TabIndex = 12;
+            this.uxFields.Location = new System.Drawing.Point(138, 48);
+            this.uxFields.Name = "uxFields";
+            this.uxFields.Size = new System.Drawing.Size(148, 21);
+            this.uxFields.TabIndex = 12;
             // 
             // label5
             // 
             this.label5.AutoSize = true;
             this.label5.Cursor = System.Windows.Forms.Cursors.No;
-            this.label5.Location = new System.Drawing.Point(304, 47);
+            this.label5.Location = new System.Drawing.Point(304, 52);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(35, 13);
             this.label5.TabIndex = 10;
@@ -185,7 +187,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(569, 42);
+            this.button1.Location = new System.Drawing.Point(569, 47);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(120, 23);
             this.button1.TabIndex = 9;
@@ -196,41 +198,54 @@
             // 
             this.uxPolygon.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.uxPolygon.FormattingEnabled = true;
-            this.uxPolygon.Location = new System.Drawing.Point(138, 13);
+            this.uxPolygon.Location = new System.Drawing.Point(138, 18);
             this.uxPolygon.Name = "uxPolygon";
             this.uxPolygon.Size = new System.Drawing.Size(148, 21);
             this.uxPolygon.TabIndex = 8;
+            this.uxPolygon.SelectedIndexChanged += new System.EventHandler(this.uxPolygon_SelectedIndexChanged);
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(24, 17);
+            this.label4.Location = new System.Drawing.Point(24, 22);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(56, 13);
             this.label4.TabIndex = 7;
             this.label4.Text = "Index map";
             // 
-            // uxExport2
+            // uxTable
             // 
-            this.uxExport2.Location = new System.Drawing.Point(12, 70);
-            this.uxExport2.Name = "uxExport2";
-            this.uxExport2.Size = new System.Drawing.Size(537, 45);
-            this.uxExport2.TabIndex = 7;
+            this.uxTable.Controls.Add(this.button1);
+            this.uxTable.Controls.Add(this.uxExport2);
+            this.uxTable.Controls.Add(this.label4);
+            this.uxTable.Controls.Add(this.uxName);
+            this.uxTable.Controls.Add(this.uxPolygon);
+            this.uxTable.Controls.Add(this.uxField);
+            this.uxTable.Controls.Add(this.label5);
+            this.uxTable.Controls.Add(this.uxFields);
+            this.uxTable.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.uxTable.Enabled = false;
+            this.uxTable.Location = new System.Drawing.Point(0, 0);
+            this.uxTable.Name = "uxTable";
+            this.uxTable.Size = new System.Drawing.Size(715, 118);
+            this.uxTable.TabIndex = 14;
+            this.uxTable.TabStop = false;
             // 
             // GridGSSHA
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(761, 262);
+            this.ClientSize = new System.Drawing.Size(715, 245);
             this.Controls.Add(this.splitContainer1);
             this.Name = "GridGSSHA";
             this.Text = "Configure GSSHA";
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);
-            this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.uxTable.ResumeLayout(false);
+            this.uxTable.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -246,12 +261,13 @@
         private System.Windows.Forms.CheckBox uxUpElev;
         private System.Windows.Forms.TextBox uxName;
         private System.Windows.Forms.Label uxField;
-        private System.Windows.Forms.ComboBox comboBox2;
+        private System.Windows.Forms.ComboBox uxFields;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ComboBox uxPolygon;
         private System.Windows.Forms.Label label4;
         private ExportValue uxExport1;
         private ExportValue uxExport2;
+        private System.Windows.Forms.GroupBox uxTable;
     }
 }
